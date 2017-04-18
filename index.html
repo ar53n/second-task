@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="mocha"></div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.js"></script>
+<script>
+    var assert = chai.assert;
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.js"></script>
+<script>
+    mocha.setup('bdd');
+</script>
+<script src="js/script1.js"></script>
+<script>
+    "use strict";
+
+    describe("Создание внутренних объектов", function () {
+        it("Создание школы со всеми полями", function () {
+            var school = new School({
+                name: 'Школа разработки интерфейсов',
+                quantity: 45
+            });
+            assert.equal(school instanceof School, true);
+        });
+        it("Создание аудитории со всеми полями", function () {
+            var classroom = new Classroom({
+                number: 454,
+                name: 'dwdw',
+                info: 'dwdwd',
+                capacity: 30
+            });
+            assert.equal(classroom instanceof Classroom, true);
+        });
+        it("Создание лекции со всеми полями", function () {
+            var lecture = new Lecture({
+                name: 'Лекция 1',
+                speaker: 'Dushkin',
+                dateFrom: '2017/09/01 18:00',
+                duration: 90,
+                classroom: 454,
+                schools: ['Школа разработки интерфейсов']
+            });
+            assert.equal(lecture instanceof Lecture, true);
+        });
+
+        it("Проверка дат лекций", function () {
+            // в сафари даты формата 2017/09/01 18:00 не воспринимаются необходимо
+            // 2017/09/01
+            var lecture = new Lecture({
+                name: 'Лекция 1',
+                speaker: 'Dushkin',
+                dateFrom: '2017/09/01 18:00',
+                duration: 30,
+                classroom: 454,
+                schools: ['Школа разработки интерфейсов']
+            });
+            assert.equal(lecture instanceof Lecture, true);
+            assert.equal(new Date(lecture.dateFrom).valueOf() === new Date('2017/09/01 18:00').valueOf() &&
+                new Date(lecture.dateEnd).valueOf() === new Date('2017/09/01 18:30').valueOf(),
+                true);
+        });
+    });
+    describe("Создание объекта мобилизация", function () {
+        it("Инициализация", function () {
+            window.mob2017 = new Mobilization();
+            assert.equal(window.mob2017 instanceof Mobilization, true);
+        });
+        it("Массивы лекции инициализирован", function () {
+            assert.equal(window.mob2017._lectures.length, 0);
+        });
+
+        it("Массивы школы инициализирован", function () {
+            assert.equal(window.mob2017._schools.length, 0);
+        });
+        it("Объект аудитории инициализирован", function () {
+            assert.equal(Object.keys(window.mob2017._classrooms).length, 0);
+        });
+    });
+    describe("Работа с основным модулем", function () {
+        it("Добавить школу в правильном формате", function () {
+            var school = window.mob2017.addSchool({
+                name: 'Школа разработки интерфейсов',
+                quantity: 45
+            });
+            assert.equal(school instanceof School, true);
+        });
+        it("Продублировать школу должна быть ошибка", function () {
+            var schoolErr = window.mob2017.addSchool({
+                name: 'Школа разработки интерфейсов',
+                quantity: 45
+            });
+            assert.ifError(schoolErr);
+        });
+        it("Получить вновь добавленную школу", function () {
+            var school = window.mob2017.getSchool('Школа разработки интерфейсов');
+            assert.equal(school.quantity === 45 && school.name === 'Школа разработки интерфейсов', true);
+        });
+        it("Изменить количество человек в школе на 51", function () {
+            var school = window.mob2017.editSchool('Школа разработки интерфейсов', {
+                quantity: 51
+            });
+            assert.equal(school instanceof School && school.quantity === 51, true);
+        });
+        it("Получить вновь измененную школу", function () {
+            var school = window.mob2017.getSchool('Школа разработки интерфейсов');
+            assert.equal(school.quantity === 51 && school.name === 'Школа разработки интерфейсов', true);
+        });
+        it("Добавить аудитории в правильном формате", function () {
+            var classroom = window.mob2017.addClassroom({
+                number: 454,
+                name: 'dwdw',
+                info: 'dwdwd',
+                capacity: 30
+            });
+            assert.equal(classroom instanceof Classroom && classroom.capacity === 30, true);
+        });
+        it("Продублировать аудиторию c другим значеним вместимости и ожидаем ошибку", function () {
+            var classroomErr = window.mob2017.addClassroom({
+                number: 454,
+                name: 'dwdw',
+                info: 'dwdwd',
+                capacity: 50
+            });
+            assert.equal(classroomErr instanceof Error, true);
+        });
+        it("Получить добавленную аудиторию", function () {
+            var classroom = window.mob2017.getClassroom(454);
+            assert.equal(classroom.capacity === 30 && classroom.name === 'dwdw' && classroom.number ===
+                454, true);
+        });
+        it("Изменить вместимость название и описание аудитории", function () {
+            var classroom = window.mob2017.editClassroom(454, {
+                name: 'Синий кит',
+                info: 'Играть мы не будем',
+                capacity: 55
+            });
+            assert.equal(classroom instanceof Classroom && classroom.capacity === 55 && classroom.name ===
+                'Синий кит', true);
+        });
+        it("Получить вновь измененную аудиторию", function () {
+            var classroom = window.mob2017.getClassroom(454);
+            assert.equal(classroom.capacity === 55 && classroom.name === 'Синий кит', true);
+        });
+
+        describe("Работа с основным модулем (Лекции)", function () {
+            it("Добавим лекцию 1", function () {
+                //лекция 1
+                //аудитория 454ч
+                //ШРИ 51ч
+                var lecture = window.mob2017.addLecture({
+                    name: 'Лекция 1',
+                    speaker: 'Dushkin',
+                    dateFrom: '2017/09/01 18:00',
+                    duration: 90,
+                    classroom: 454,
+                    schools: ['Школа разработки интерфейсов']
+                });
+                assert.equal(lecture instanceof Lecture, true);
+            });
+            it("Продублируем лекцию 1", function () {
+                //лекция 1
+                //аудитория 454ч
+                //ШРИ 51ч
+                console.warn('Ожидание ошибки... о занятости аудитории и занятости группы');
+                var lecture = window.mob2017.addLecture({
+                    name: 'Лекция 1',
+                    speaker: 'Dushkin',
+                    dateFrom: '2017/09/01 18:00',
+                    duration: 90,
+                    classroom: 454,
+                    schools: ['Школа разработки интерфейсов']
+                });
+                console.warn('Ожидание завершено');
+                assert.equal(lecture === undefined, true);
+            });
+
+            it("Изменим дату и название и продублируем лекцию ", function () {
+                var lecture = window.mob2017.addLecture({
+                    name: 'Лекция 2',
+                    speaker: 'Dushkin',
+                    dateFrom: '2017/09/02 18:00',
+                    duration: 90,
+                    classroom: 454,
+                    schools: ['Школа разработки интерфейсов']
+                });
+                assert.equal(lecture instanceof Lecture, true);
+            });
+            it("В массиве лекций должно быть 2 записи", function () {
+                assert.equal(window.mob2017._lectures.length == 2, true);
+            });
+            it("Допустимость лекции по дате при указании даты начала и окончания", function () {
+                var lecture = new Lecture({
+                    name: 'Лекция 1',
+                    speaker: 'Dushkin',
+                    dateFrom: '2017/09/01 18:00',
+                    duration: 90,
+                    classroom: 454,
+                    schools: ['Школа разработки интерфейсов']
+                });
+                assert.equal(lecture.checkByDataRange('2017/09/01 18:00', '2017/09/01 19:30'),
+                    true);
+            });
+            it("Допустимость лекции по дате при указании даты начала", function () {
+                var lecture = new Lecture({
+                    name: 'Лекция 1',
+                    speaker: 'Dushkin',
+                    dateFrom: '2017/09/01 18:00',
+                    duration: 90,
+                    classroom: 454,
+                    schools: ['Школа разработки интерфейсов']
+                });
+                assert.equal(lecture.checkByDataRange('2017/09/01 18:00'), true);
+            });
+            it("Допустимость лекции по дате при указании даты окончания", function () {
+                var lecture = new Lecture({
+                    name: 'Лекция 1',
+                    speaker: 'Dushkin',
+                    dateFrom: '2017/09/01 18:00',
+                    duration: 90,
+                    classroom: 454,
+                    schools: ['Школа разработки интерфейсов']
+                });
+                assert.equal(lecture.checkByDataRange(undefined, '2017/09/01 19:30'), true);
+            });
+            describe("Добавим больше школ", function () {
+                var schoolArray = [{
+                    name: 'Школа мобильного дизайна',
+                    quantity: 28
+                }, {
+                    name: 'Школа мобильной разработки',
+                    quantity: 60
+                }, {
+                    name: 'Школа менеджмента',
+                    quantity: 58
+                }];
+                schoolArray.forEach(function (school, index) {
+                    it("\u0414\u043E\u0431\u0430\u0432\u0438\u043C " + school.name +
+                        ", \u0433\u0434\u0435 " + school.quantity +
+                        " \u0447\u0435\u043B.",
+                        function () {
+                            var _school = window.mob2017.addSchool(school);
+                            assert.equal(school.name === _school.name, true);
+                        });
+                });
+            });
+            describe("Добавим больше аудиторий", function () {
+                var classroomArray = [{
+                    name: 'Белый тигр',
+                    capacity: 50,
+                    info: "Для совещаний",
+                    number: 100
+                }, {
+                    name: 'Индийский слон',
+                    capacity: 80,
+                    info: "Самая большая комната",
+                    number: 200
+                }, {
+                    name: 'Пушистый барс',
+                    capacity: 150,
+                    info: "Для лекций",
+                    number: 300
+                }];
+                classroomArray.forEach(function (classroom, index) {
+                    it("\u0414\u043E\u0431\u0430\u0432\u0438\u043C " + classroom.name +
+                        " \u0441 \u0432\u043C\u0435\u0441\u0442\u0438\u043C\u043E\u0441\u0442\u044C\u044E " +
+                        classroom.capacity,
+                        function () {
+                            var _classroom = window.mob2017.addClassroom(classroom);
+                            assert.equal(classroom.name === _classroom.name, true);
+                        });
+                });
+            });
+            describe("Добавим лекции для каждой школы и пару общих лекций", function () {
+                var lectionArray = [{
+                    name: 'Лекция 1.Animations',
+                    speaker: 'Щербин',
+                    dateFrom: '2017/09/01 18:00',
+                    duration: 90,
+                    classroom: 200,
+                    schools: ['Школа мобильного дизайна']
+                }, {
+                    name: 'Лекция 1.Product and platforms',
+                    speaker: 'Щербин',
+                    dateFrom: '2017/09/05 18:00',
+                    duration: 90,
+                    classroom: 100,
+                    schools: ['Школа мобильного дизайна']
+                }, {
+                    name: 'Лекция 1.Drawing',
+                    speaker: 'Tomilov',
+                    dateFrom: '2017/09/04 18:00',
+                    duration: 90,
+                    classroom: 300,
+                    schools: ['Школа мобильной разработки']
+                }, {
+                    name: 'Лекция 1.SQL&SQlite',
+                    speaker: 'Tomilov',
+                    dateFrom: '2017/09/10 18:00',
+                    duration: 90,
+                    classroom: 200,
+                    schools: ['Школа мобильной разработки']
+                }, {
+                    name: 'Работа в команде',
+                    speaker: 'Makarov',
+                    dateFrom: '2017/09/10 20:00',
+                    duration: 90,
+                    classroom: 300,
+                    schools: ['Школа мобильной разработки',
+                        'Школа разработки интерфейсов', 'Школа мобильного дизайна'
+                    ]
+                }];
+                lectionArray.forEach(function (lection, index) {
+                    it("\u0414\u043E\u0431\u0430\u0432\u0438\u043C " + lection.name +
+                        " \u043F\u0440\u043E\u0439\u0434\u0435\u0442 \u0432 \u0430\u0443\u0434\u0438\u0442\u043E\u0440\u0438\u0438 # " +
+                        lection.classroom,
+                        function () {
+                            var _lection = window.mob2017.addLecture(lection);
+                            assert.equal(lection.name === _lection.name, true);
+                        });
+                });
+                it("Добавим лекцию чтобы пересекались школы", function () {
+                    var _lection = window.mob2017.addLecture({
+                        name: 'Работа в команде',
+                        speaker: 'Makarov',
+                        dateFrom: '2017/09/10 18:00',
+                        duration: 90,
+                        classroom: 300,
+                        schools: ['Школа мобильной разработки',
+                            'Школа разработки интерфейсов',
+                            'Школа мобильного дизайна'
+                        ]
+                    });
+                    assert.equal(_lection === undefined, true);
+                });
+                it("Добавим лекцию чтобы пересекались школы", function () {
+                    var _lection = window.mob2017.addLecture({
+                        name: 'Работа в команде',
+                        speaker: 'Makarov',
+                        dateFrom: '2017/09/01 18:00',
+                        duration: 90,
+                        classroom: 200,
+                        schools: ['Школа мобильной разработки']
+                    });
+                    assert.equal(_lection === undefined, true);
+                });
+            });
+            describe("Редактирование лекций", function () {
+                it("Неправильные параметры поиска через школу", function () {
+                    var error = window.mob2017.editLecture({
+                        school: 'Школа разработки интерфейсов',
+                        dateStart: '2017/09/20 18:00'
+                    }, {
+                        name: 'Работа в команде (ред.)'
+                    });
+                    assert.throws(window.mob2017.editLecture({
+                        school: 'Школа разработки интерфейсов',
+                        dateStart: '2017/09/20 18:00'
+                    }, {
+                        name: 'Работа в команде (ред.)'
+                    }), Error);
+                });
+                it("Редактирование лекции через школу", function () {
+                    var lecture = window.mob2017.editLecture({
+                        school: 'Школа разработки интерфейсов',
+                        dateStart: '2017/09/01 18:00'
+                    }, {
+                        name: 'Работа 1 (ред.)'
+                    });
+                    assert.equal(lecture instanceof Lecture, true);
+                });
+                it("Некорректный поиск через аудиторию", function () {
+                    var lecture = window.mob2017.editLecture({
+                        classroom: 300,
+                        dateStart: '2017/09/01 18:00'
+                    }, {
+                        name: 'Работа в команде (ред.)'
+                    });
+                    assert.equal(lecture instanceof Lecture, true);
+                });
+                it("Редактирование лекции через аудиторию", function () {
+                    var lecture = window.mob2017.editLecture({
+                        classroom: 200,
+                        dateStart: '2017/09/01 18:00'
+                    }, {
+                        name: 'Работа в команде (ред.)'
+                    });
+                    assert.equal(lecture instanceof Lecture, true);
+                });
+            });
+        });
+    });
+</script>
+<script>
+    mocha.run();
+</script>
+
+</html>
