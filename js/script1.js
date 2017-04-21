@@ -45,11 +45,7 @@ class Classroom {
 }
 
 class Lecture {
-    //проверка чтобы у одной школы не было двух лекций в одно время
     constructor(options) {
-        // идеальный вариант конструктора, что при проверке всех наших критериев он
-        // выдаст на список возможных аудиторий, если это необходимо поэтому мы проверим
-        // на наличие всех полей но не будем выкидывать исключения
         if (options.name) {
             this["name"] =  options.name;
         } else {
@@ -74,15 +70,13 @@ class Lecture {
         } else {
             throw new Error('Needed lecture duration')
         }
-        if (options.classroom/*&& Classroom.getClassroom(options.classroom)*/) {
-            //сделать метод на валидацию данных
+        if (options.classroom) {
             this["classroom"] = options.classroom;
         } else {
             throw new Error('Needed lecture classroom')
         }
         if (options.schools) {
             this["schools"] = options.schools;
-            // capacityCheck(options.classroom, options.schools);
         } else {
             throw new Error('Needed schools for this lecture')
         }
@@ -91,14 +85,14 @@ class Lecture {
     }
 
     setValid(){
-        this.valid = true
+        this.valid = true;
+        return this.isValid();
     }
 
     setNotValid(){
         this.valid = false;
-        console.error(`Для лекции "${this.name}" необходимо изменить аудиторию.
-        Аудитория на ${this.classroom.capacity} человек.`);
-        return false
+        //чтобы не дублировать ошибку в двух методах вызовем уже готовую функцию
+        return this.isValid();
     }
 
     isValid() {
@@ -110,7 +104,14 @@ class Lecture {
             return this.valid;
         }
     }
-
+    /**
+     * Метод для редактирования лекций
+     * 
+     * @param {any} newValue 
+     * @returns 
+     * 
+     * @memberOf Lecture
+     */
     edit(newValue) {
         if (newValue.name) {
             this["name"] =  newValue.name;
@@ -132,35 +133,12 @@ class Lecture {
         }
         if (newValue.schools) {
             this["schools"] = newValue.schools;
-            // capacityCheck(newValue.classroom, newValue.schools);
         }
         return this;
     }
-    /**
-     * 
-     * Проверка на вместимость аудитории для всех школ на этой лекции
-     * @static
-     * @param {Classroom} [classroom=this.classroom] 
-     * @param {School|School[]} [schools=this.schools] 
-     * @returns {boolean}
-     * 
-     * @memberOf Lecture
-     */
-    // static capacityCheck(classroom=this.classroom,schools=this.schools) {
-    //     let classroomCapacity = classroom.capacity;
-    //     let quantity = 0;
-    //     if (Array.isArray(schools)) {
-    //         this._schools.forEach(function (school) {
-    //                 quantity += schools.quantity;
-    //             }, this);
-    //     } else {
-    //         quantity += schools.quantity;
-    //     }
-    //     return classroomCapacity >= quantity;
-    // }
 
     /**
-     * 
+     * Проверка на соответствие заданной дате
      * 
      * @param {any} dateStart 
      * @param {any} dateEnd 
@@ -191,7 +169,14 @@ class Lecture {
         }
     }
 
-
+    /**
+     * Проверка на принадлежность данной аудитории
+     * 
+     * @param {any} classroom 
+     * @returns 
+     * 
+     * @memberOf Lecture
+     */
     checkByClassroom(classroom) {
         if (this.classroom.number === classroom) {
             return true;
@@ -200,6 +185,14 @@ class Lecture {
         }
     }
 
+    /**
+     * Проверка на принадлежность школы к лекции
+     * 
+     * @param {any} schoolName 
+     * @returns 
+     * 
+     * @memberOf Lecture
+     */
     checkBySchool(schoolName) {
         schoolName = schoolName.toLowerCase().trim();
         return this.schools.some(school=>{
@@ -213,10 +206,8 @@ class Lecture {
 }
 
 class School {
-    //добавить возможность добавления через массив
     constructor(options) {
         if (options.name) {
-            //не может быть двух школ с одинаковым названием
             this["name"] = options.name;
         } else {
             throw new Error('Needed school name')
@@ -228,6 +219,14 @@ class School {
         }
         return this;
     }
+    /**
+     * Редактирование объекта школа
+     * 
+     * @param {any} newValue 
+     * @returns 
+     * 
+     * @memberOf School
+     */
     edit(newValue) {
         if (newValue.name) {
             this.name = newValue.name;
@@ -241,11 +240,19 @@ class School {
 
 class Mobilization {
     constructor() {
-        this._classrooms = {}; //предположим что у каждой аудитории есть уникальный номер и поэтому для быстрого поиска мы можем орагнизовать объект где ключом будет являть номер аудитории а значения информация об аудитории;
+        //предположим что у каждой аудитории есть уникальный номер и поэтому для быстрого поиска мы можем орагнизовать объект где ключом будет являть номер аудитории а значения информация об аудитории;
+        this._classrooms = {}; 
         this._schools = [];
         this._lectures = [];
     }
-
+    /**
+     * Добавление школы
+     * 
+     * @param {School} data 
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     addSchool(data) {
         let dublicateSchool;
         try {
@@ -261,7 +268,12 @@ class Mobilization {
             console.error(e.message)
         }
     }
-
+/**
+ * Проверка вместимости всех аудиторий на всех лекциях
+ * 
+ * @private
+ * @memberOf Mobilization
+ */
     _checkAllCapacity() {
         this._lectures.forEach(lecture=>{
             if (this.capacityCheck(lecture.classroom,lecture.schools)) {
@@ -271,16 +283,26 @@ class Mobilization {
             }
         })
     }
-
+    /**
+     * Редактирование школы
+     * 
+     * @param {String} name 
+     * @param {School} newValue 
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     editSchool(name, newValue) {
         try {
             let prevValue = this.getSchool(name);
             let dublicateSchoolName;
-            if (newValue.name) {
+            if (newValue && newValue.name) {
                 dublicateSchoolName = this.getSchool(newValue.name);
                 if (dublicateSchoolName) {
                     throw new Error('Школа с данным именем уже существует')
                 }
+            } else if (Object.keys(newValue)===0) {
+                throw new Error(`Нужны данные для редактирования`)
             }
             let newSchool = prevValue.edit(newValue);
             this._checkAllCapacity();
@@ -289,7 +311,13 @@ class Mobilization {
             console.error(`${e.message}`)
         }
     }
-
+    /**
+     * Получить список школ
+     * 
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     getSchoolList() {
         return this._schools
     }
@@ -309,7 +337,14 @@ class Mobilization {
             return _school
         }
     }
-
+    /**
+     * Добавление аудитории
+     * 
+     * @param {Classroom} data 
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     addClassroom(data) {
         if (this._classrooms[data.number]) {
             throw new Error('Аудитория с таким номером уже существует')
@@ -319,7 +354,15 @@ class Mobilization {
             return classroom;
         }
     }
-
+    /**
+     * Редактирование аудитории
+     * 
+     * @param {any} number 
+     * @param {any} newValue 
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     editClassroom(number, newValue) {
         let prevValue = this.getClassroom(number);
         let newClassroom = prevValue.edit(newValue);
@@ -327,6 +370,14 @@ class Mobilization {
         return newClassroom;
     }
 
+    /**
+     * Поиск аудитории по номеру
+     * 
+     * @param {any} number 
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     getClassroom(number) {
         const classrooms = this.getClassroomList()
         if (classrooms[number]) {
@@ -335,7 +386,13 @@ class Mobilization {
             new Error('Такой аудитории нет в списке')
         }
     }
-
+    /**
+     * Получить список аудиторий
+     * 
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     getClassroomList() {
         if (this._classrooms) {
             return this._classrooms;
@@ -344,6 +401,14 @@ class Mobilization {
         }
     }
 
+    /**
+     * Добавить лекцию
+     * 
+     * @param {Lection} data 
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     addLecture(data) {
         let lecture = new Lecture(data);
         let _classroom = this.getClassroom(lecture.classroom);
@@ -370,6 +435,15 @@ class Mobilization {
     }
     //редактирование лекции однозначно определить лекцию можно по дате и по аудитории 
     //либо по дате и по школе
+    /**
+     * Редактирование лукции
+     * 
+     * @param {Object} searchParams - dateStart and dateEnd arguments and school or classroom name
+     * @param {Lecture} newValue 
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     editLecture(searchParams,newValue) {
         let {dateStart,dateEnd, school,classroom} = searchParams;
         let lecture;
@@ -397,7 +471,14 @@ class Mobilization {
             throw new Error('Не указана дата проведения лекции')
         }
     }
-
+    /**
+     * Валидация лекции по аудитории, вместимости, и по школе
+     * 
+     * @param {any} lecture 
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     lectureValidate(lecture) {
         let capacity = this.capacityCheck(lecture.classroom, lecture.schools);
         if (capacity === false) {
@@ -424,7 +505,17 @@ class Mobilization {
     }
 
     
-
+    /**
+     * Поиск лекции по названию школы и необязательные параметры даты
+     * 
+     * @param {string} schoolName 
+     * @param {Date} [dateStart] 
+     * @param {Date} [dateEnd] 
+     * @param {any} [strict] - Строгий поиск по дате
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     findLecturesBySchool(schoolName,dateStart,dateEnd,strict) {
         //метод реализует поиск по школе при необязательных параметрах даты
         //проверка для всех привязанных школ
@@ -437,6 +528,17 @@ class Mobilization {
         })
     }
 
+    /**
+     * Поиск лекции по номеру аудитории и необязательные параметры даты
+     * 
+     * @param {string} schoolName 
+     * @param {Date} [dateStart] 
+     * @param {Date} [dateEnd] 
+     * @param {any} [strict] - Строгий поиск по дате
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
     findLecturesByClassroom(classroom,dateStart,dateEnd,strict) {
         return this._lectures.filter(lecture=>{
             if (lecture.checkByClassroom(classroom) && !lecture.editing
@@ -446,7 +548,14 @@ class Mobilization {
             }
         })
     }
-
+    /**
+     * Подсчет количества человек в школах
+     * 
+     * @param {School|School[]} schools 
+     * @returns {Number}
+     * 
+     * @memberOf Mobilization
+     */
     _calculateQuantity(schools) {
         let quantity = 0;
         if (Array.isArray(schools)) {
@@ -462,6 +571,16 @@ class Mobilization {
         }
         return quantity;
     }
+
+    /**
+     * 
+     * 
+     * @param {Classroom|string} classroom 
+     * @param {School| School[]} schools 
+     * @returns 
+     * 
+     * @memberOf Mobilization
+     */
 
     capacityCheck(classroom, schools) {
         //сделать входными параметрами объекты School and Classrooms
