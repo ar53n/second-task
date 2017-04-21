@@ -125,13 +125,15 @@
             assert.equal(classroom instanceof Classroom && classroom.capacity === 30, true);
         });
         it("Продублировать аудиторию c другим значеним вместимости и ожидаем ошибку", function () {
-            var classroomErr = window.mob2017.addClassroom({
-                number: 454,
-                name: 'dwdw',
-                info: 'dwdwd',
-                capacity: 50
-            });
-            assert.equal(classroomErr instanceof Error, true);
+            assert.throws(
+                function () {
+                    window.mob2017.addClassroom({
+                        number: 454,
+                        name: 'dwdw',
+                        info: 'dwdwd',
+                        capacity: 50
+                    })
+                }, Error);
         });
         it("Получить добавленную аудиторию", function () {
             var classroom = window.mob2017.getClassroom(454);
@@ -356,18 +358,14 @@
             });
             describe("Редактирование лекций", function () {
                 it("Неправильные параметры поиска через школу", function () {
-                    var error = window.mob2017.editLecture({
+                    assert.throws(function(){
+                        window.mob2017.editLecture({
                         school: 'Школа разработки интерфейсов',
                         dateStart: '2017/09/20 18:00'
                     }, {
                         name: 'Работа в команде (ред.)'
-                    });
-                    assert.throws(window.mob2017.editLecture({
-                        school: 'Школа разработки интерфейсов',
-                        dateStart: '2017/09/20 18:00'
-                    }, {
-                        name: 'Работа в команде (ред.)'
-                    }), Error);
+                    })
+                }, Error);
                 });
                 it("Редактирование лекции через школу", function () {
                     var lecture = window.mob2017.editLecture({
@@ -379,13 +377,14 @@
                     assert.equal(lecture instanceof Lecture, true);
                 });
                 it("Некорректный поиск через аудиторию", function () {
-                    var lecture = window.mob2017.editLecture({
+                    assert.throws(function(){
+                        window.mob2017.editLecture({
                         classroom: 300,
                         dateStart: '2017/09/01 18:00'
                     }, {
                         name: 'Работа в команде (ред.)'
-                    });
-                    assert.equal(lecture instanceof Lecture, true);
+                    })
+                }, Error);
                 });
                 it("Редактирование лекции через аудиторию", function () {
                     var lecture = window.mob2017.editLecture({
