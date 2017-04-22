@@ -454,6 +454,7 @@ class Mobilization {
                 lecture = this.findLecturesByClassroom(classroom,dateStart,dateEnd,true)[0]
             }
             if (lecture) {
+                // при поиске данная лекция не должна учитываться
                 lecture.editing = true;
                 let prevValue = Object.assign({},lecture)
                 let newLecture = lecture.edit(newValue);
@@ -594,18 +595,18 @@ class Mobilization {
         return classroomCapacity >= quantity;
     }
 
-    saveState() {
-        if (window.localStorage) {
-            localStorage.setItem('mob_classrooms',JSON.stringify(this._classrooms))
-            localStorage.setItem('mob_schools',JSON.stringify(this._schools))
-            localStorage.setItem('mob_lectures',JSON.stringify(this._lectures))
-        }
-    }
-    restoreState() {
-        // if (window.localStorage) {
-        //     localStorage.getItem('mob_classrooms')
-        //     localStorage.getItem('mob_schools')
-        //     localStorage.getItem('mob_lectures')
-        // }
-    }
+    // saveState() {
+    //     if (window.localStorage) {
+    //         localStorage.setItem('mob_classrooms',JSON.stringify(this._classrooms))
+    //         localStorage.setItem('mob_schools',JSON.stringify(this._schools))
+    //         localStorage.setItem('mob_lectures',JSON.stringify(this._lectures))
+    //     }
+    // }
+    // restoreState() {
+    //     // if (window.localStorage) {
+    //     //     localStorage.getItem('mob_classrooms')
+    //     //     localStorage.getItem('mob_schools')
+    //     //     localStorage.getItem('mob_lectures')
+    //     // }
+    // }
 }
