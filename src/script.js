@@ -1,7 +1,5 @@
 class Classroom {
-    // предположим, что у каждой аудитории есть номер static get _classRoomList() {
-    // return Classroom._classRoomList; } static set _classRoomList(value) { _bar =
-    // value; }
+    // предположим, что у каждой аудитории есть номер 
     constructor(options) {
         //добавить возможность заполнения через массив
         if (options.number) {
