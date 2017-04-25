@@ -321,19 +321,14 @@ class Mobilization {
     }
 
     getSchool(name) {
-        //переделать логику ошибки и добавления школы
+        let _schools = this.getSchoolList();
         name = name.toLowerCase().trim();
-        let _school = this._schools.find(school => {
+        let _school = _schools.find(school => {
                 if (name === school.name.toLowerCase()) {
                     return school;
                 }
             })
-        if (_school) {
-            return _school
-        } else {
-            console.error(`Такой школы нет в списке`)
-            return _school
-        }
+            return _school;
     }
     /**
      * Добавление аудитории
@@ -344,7 +339,7 @@ class Mobilization {
      * @memberOf Mobilization
      */
     addClassroom(data) {
-        if (this._classrooms[data.number]) {
+        if (this.getClassroom(data.number)) {
             throw new Error('Аудитория с таким номером уже существует')
         } else {
             let classroom = new Classroom(data)
@@ -362,10 +357,14 @@ class Mobilization {
      * @memberOf Mobilization
      */
     editClassroom(number, newValue) {
-        let prevValue = this.getClassroom(number);
-        let newClassroom = prevValue.edit(newValue);
-        this._checkAllCapacity();
-        return newClassroom;
+        try {
+            let prevValue = this.getClassroom(number);
+            let newClassroom = prevValue.edit(newValue);
+            this._checkAllCapacity();
+            return newClassroom;
+        } catch(e) {
+            console.error(e.message)
+        }
     }
 
     /**
@@ -378,11 +377,7 @@ class Mobilization {
      */
     getClassroom(number) {
         const classrooms = this.getClassroomList()
-        if (classrooms[number]) {
-            return classrooms[number];
-        } else {
-            new Error('Такой аудитории нет в списке')
-        }
+        return classrooms[number];
     }
     /**
      * Получить список аудиторий
@@ -392,11 +387,7 @@ class Mobilization {
      * @memberOf Mobilization
      */
     getClassroomList() {
-        if (this._classrooms) {
-            return this._classrooms;
-        } else {
-            throw new Error(`Список аудиторий пустой`)
-        }
+        return this._classrooms;
     }
 
     /**

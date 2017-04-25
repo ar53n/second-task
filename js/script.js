@@ -382,19 +382,14 @@ var Mobilization = function () {
     }, {
         key: "getSchool",
         value: function getSchool(name) {
-            //переделать логику ошибки и добавления школы
+            var _schools = this.getSchoolList();
             name = name.toLowerCase().trim();
-            var _school = this._schools.find(function (school) {
+            var _school = _schools.find(function (school) {
                 if (name === school.name.toLowerCase()) {
                     return school;
                 }
             });
-            if (_school) {
-                return _school;
-            } else {
-                console.error("\u0422\u0430\u043A\u043E\u0439 \u0448\u043A\u043E\u043B\u044B \u043D\u0435\u0442 \u0432 \u0441\u043F\u0438\u0441\u043A\u0435");
-                return _school;
-            }
+            return _school;
         }
         /**
          * Добавление аудитории
@@ -408,7 +403,7 @@ var Mobilization = function () {
     }, {
         key: "addClassroom",
         value: function addClassroom(data) {
-            if (this._classrooms[data.number]) {
+            if (this.getClassroom(data.number)) {
                 throw new Error('Аудитория с таким номером уже существует');
             } else {
                 var classroom = new Classroom(data);
@@ -429,10 +424,14 @@ var Mobilization = function () {
     }, {
         key: "editClassroom",
         value: function editClassroom(number, newValue) {
-            var prevValue = this.getClassroom(number);
-            var newClassroom = prevValue.edit(newValue);
-            this._checkAllCapacity();
-            return newClassroom;
+            try {
+                var prevValue = this.getClassroom(number);
+                var newClassroom = prevValue.edit(newValue);
+                this._checkAllCapacity();
+                return newClassroom;
+            } catch (e) {
+                console.error(e.message);
+            }
         }
 
         /**
@@ -448,11 +447,7 @@ var Mobilization = function () {
         key: "getClassroom",
         value: function getClassroom(number) {
             var classrooms = this.getClassroomList();
-            if (classrooms[number]) {
-                return classrooms[number];
-            } else {
-                new Error('Такой аудитории нет в списке');
-            }
+            return classrooms[number];
         }
         /**
          * Получить список аудиторий
@@ -465,11 +460,7 @@ var Mobilization = function () {
     }, {
         key: "getClassroomList",
         value: function getClassroomList() {
-            if (this._classrooms) {
-                return this._classrooms;
-            } else {
-                throw new Error("\u0421\u043F\u0438\u0441\u043E\u043A \u0430\u0443\u0434\u0438\u0442\u043E\u0440\u0438\u0439 \u043F\u0443\u0441\u0442\u043E\u0439");
-            }
+            return this._classrooms;
         }
 
         /**
@@ -537,6 +528,7 @@ var Mobilization = function () {
                     lecture = this.findLecturesByClassroom(classroom, dateStart, dateEnd, true)[0];
                 }
                 if (lecture) {
+                    // при поиске данная лекция не должна учитываться
                     lecture.editing = true;
                     var prevValue = Object.assign({}, lecture);
                     var newLecture = lecture.edit(newValue);
