@@ -5,9 +5,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Classroom = function () {
-    // предположим, что у каждой аудитории есть номер static get _classRoomList() {
-    // return Classroom._classRoomList; } static set _classRoomList(value) { _bar =
-    // value; }
+    // предположим, что у каждой аудитории есть номер 
     function Classroom(options) {
         _classCallCheck(this, Classroom);
 
